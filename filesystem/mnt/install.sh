@@ -30,7 +30,7 @@ gitlab-runner register \
     --non-interactive \
     --url https://gitlab.adm.acme.corp/gitlab \
     --registration-token "$GITLAB_RUNNER_REGISTRATION_KEY" \
-    --tag-list "k3s-tst" \
+    --tag-list "k3s-tst,terraform,bw" \
     --executor shell
 
 export cred_home="/home/gitlab-runner"
@@ -74,3 +74,9 @@ curl -sLS https://get.arkade.dev | sh
 arkade get kubectl kubectx kubens helm
 chmod 755 /root/.arkade/bin/*
 mv /root/.arkade/bin/* /usr/local/bin/.
+
+echo "Install Bitwarden CLI"
+curl -Lo bw.zip https://github.com/bitwarden/clients/releases/download/cli-v2024.1.0/bw-linux-2024.1.0.zip
+unzip bw.zip -d .
+sudo install bw /usr/local/bin/
+rm -f bw bw.zip
