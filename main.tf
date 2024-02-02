@@ -1,27 +1,49 @@
-module "container_adm_glrunner_k2" {
-  source    = "github.com/studio-telephus/terraform-lxd-instance.git?ref=1.0.3"
-  name      = "container-adm-glrunner-k2"
-  image     = "images:debian/bookworm"
-  profiles  = ["limits", "fs-dir", "nw-adm"]
-  autostart = true
-  nic = {
-    name = "eth0"
-    properties = {
-      nictype        = "bridged"
-      parent         = "adm-network"
-      "ipv4.address" = "10.0.10.131"
-    }
+locals {
+  name              = "glrunner-k2"
+  docker_image_name = "tel-${var.env}-${local.name}"
+  container_name    = "container-${var.env}-${local.name}"
+  fqdn              = "gitlab.docker.${var.env}.acme.corp"
+  gitlab_address    = "https://${local.fqdn}/gitlab"
+}
+
+resource "docker_image" "gitlab_runner" {
+  name         = local.docker_image_name
+  keep_locally = false
+  build {
+    context = path.module
   }
-  mount_dirs = [
-    "${path.cwd}/filesystem-shared-ca-certificates",
-    "${path.cwd}/filesystem",
-  ]
+}
+
+resource "docker_volume" "gitlab_runner_home" {
+  name = "volume-${var.env}-${local.name}-home"
+}
+
+module "container_gitlab_runner" {
+  source       = "github.com/studio-telephus/terraform-docker-container.git?ref=1.0.3"
+  name         = local.container_name
+  image        = docker_image.gitlab_runner.image_id
+  hostname     = local.container_name
   exec_enabled = true
-  exec         = "/mnt/install.sh"
+  exec         = "/mnt/register.sh"
+
   environment = {
-    RANDOM_STRING                  = "844cc615-8e80-4703-b4c9-057ee868e2fa"
-    GITLAB_RUNNER_REGISTRATION_KEY = var.gitlab_runner_registration_key
-    GIT_SA_USERNAME                = var.git_sa_username
-    GIT_SA_TOKEN                   = var.git_sa_token
+    GITLAB_ADDRESS                 = local.gitlab_address
+    GITLAB_RUNNER_REGISTRATION_KEY = module.bw_gitlab_runner_registration_key.data.password
   }
+
+  networks_advanced = [
+    {
+      name         = "${var.env}-docker"
+      ipv4_address = "10.10.0.131"
+    }
+  ]
+
+  volumes = [
+    {
+      volume_name    = docker_volume.gitlab_runner_home.name
+      container_path = "/home/gitlab-runner"
+      read_only      = false
+    }
+  ]
+
 }
