@@ -16,13 +16,13 @@ jobs:
           SshPort: ${{ secrets.TEL_SSH_PORT }}
           SshUser: ${{ secrets.TEL_SSH_USER }}
           SshPrivateKey: ${{ secrets.GHA_SSH_PRIVATE_KEY }}
-          RemotePath: "~/build/containers/adm/glrunner-k2"
+          RemotePath: "~/build/containers/tst/glrunner-k2"
           BackendConfig: >
             {
               "endpoint": "${{ vars.MINIO_ADM_S3_ENDPOINT }}",
               "access_key": "${{ secrets.MINIO_ADM_SA_ACCESS_KEY }}",
               "secret_key": "${{ secrets.MINIO_ADM_SA_SECRET_KEY }}",
-              "bucket": "bucket-platform-state-adm",
+              "bucket": "bucket-platform-state-tst",
               "key": "docker/glrunner-k2/tfstate.json",
               "region": "main",
               "skip_credentials_validation": true,

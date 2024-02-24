@@ -2,8 +2,7 @@ locals {
   name              = "glrunner-k2"
   docker_image_name = "tel-${var.env}-${local.name}"
   container_name    = "container-${var.env}-${local.name}"
-  fqdn              = "gitlab.docker.${var.env}.acme.corp"
-  gitlab_address    = "https://${local.fqdn}/gitlab"
+  gitlab_address    = "https://gitlab.docker.adm.acme.corp/gitlab"
 }
 
 resource "docker_image" "gitlab_runner" {
@@ -39,6 +38,10 @@ module "container_gitlab_runner" {
   networks_advanced = [
     {
       name         = "${var.env}-docker"
+      ipv4_address = "10.30.0.131"
+    },
+    {
+      name         = "adm-docker"
       ipv4_address = "10.10.0.131"
     }
   ]
@@ -50,5 +53,4 @@ module "container_gitlab_runner" {
       read_only      = false
     }
   ]
-
 }
